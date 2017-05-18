@@ -1,6 +1,6 @@
 {
   "name": "andrewboy/see-me-gateway",
-  "description": "Laravel package for see me SMS sender.",
+  "description": "Helper class for see me SMS sender.",
   "keywords": ["see me", "sms", "sms sender", "sender"],
   "authors": [
     {
