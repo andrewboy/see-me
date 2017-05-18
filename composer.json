@@ -1,0 +1,24 @@
+{
+  "name": "andrewboy/see-me-gateway",
+  "description": "Laravel package for see me SMS sender.",
+  "keywords": ["see me", "sms", "sms sender", "sender"],
+  "authors": [
+    {
+      "name": "Beck András",
+      "email": "andras.jozsef.beck@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.9"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "4.*",
+    "fabpot/php-cs-fixer": "^1.10"
+  },
+  "autoload": {
+    "psr-0": {
+      "Andrewboy\\SeeMeGateway": "src/"
+    }
+  },
+  "minimum-stability": "dev"
+}
