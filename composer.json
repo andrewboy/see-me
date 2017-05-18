@@ -1,7 +1,7 @@
 {
   "name": "andrewboy/see-me-gateway",
-  "description": "Helper class for see me SMS sender.",
-  "keywords": ["see me", "sms", "sms sender", "sender"],
+  "description": "Helper class for SeeMe SMS sender.",
+  "keywords": ["see me", "sms", "sms sender", "sender", "seeme"],
   "authors": [
     {
       "name": "Beck András",
