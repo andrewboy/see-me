@@ -1,6 +1,6 @@
-<?php namespace Andrewboy\SeeMeGateway;
+<?php namespace Andrewboy\SeeMe;
 
-use Andrewboy\SeeMeGateway\Exceptions\SeeMeGatewayException;
+use Andrewboy\SeeMe\Exceptions\SeeMeGatewayException;
 use \Exception as Exception;
 
 /**
@@ -8,8 +8,6 @@ use \Exception as Exception;
  * SeeMe SMS Gateway class
  *
  * @version 2.0.1 SeeMeGateway
- * @copyright 2013, Dream Interactive Kft.
- * @author 2013 Adam Pinter adam.pinter@dream.hu
  *
  * @link https://seeme.hu
  *

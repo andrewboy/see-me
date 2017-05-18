@@ -1,4 +1,4 @@
-<?php namespace Andrewboy\SeeMeGateway\Exceptions;
+<?php namespace Andrewboy\SeeMe\Exceptions;
 
 use \Exception as Exception;
 
