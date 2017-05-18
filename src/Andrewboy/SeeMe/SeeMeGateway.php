@@ -52,6 +52,13 @@ class SeeMeGateway
     protected $version = '2.0.1';
     protected $checksumLength = 4;
 
+    /**
+     * SeeMeGateway constructor.
+     * @param string $apiKey
+     * @param bool $logFileDestination
+     * @param string $format
+     * @param string $method
+     */
     public function __construct($apiKey, $logFileDestination = false, $format = self::FORMAT_JSON, $method = self::METHOD_CURL)
     {
         $this->setApiKey($apiKey);
@@ -71,7 +78,7 @@ class SeeMeGateway
             throw new SeeMeGatewayException('Invalid API key type. Must be string', 1);
         }
 
-        if (!$this->validateApiKey($this->params['key'])) {
+        if (!$this->validateApiKey($apiKey)) {
             throw new SeeMeGatewayException('Invalid API key', 18);
         }
 
@@ -117,7 +124,7 @@ class SeeMeGateway
      */
     public function setLogFileDestination($logFileDestination)
     {
-        if (false !== $logFileDestination || !is_string($logFileDestination)) {
+        if (false !== $logFileDestination && !is_string($logFileDestination)) {
             throw new SeeMeGatewayException('Invalid log file destination. Must be string or boolean false', 1);
         }
 
