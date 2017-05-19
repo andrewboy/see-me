@@ -23,6 +23,9 @@ use \Exception as Exception;
 
 class SeeMeGateway
 {
+    const RESULT_STATUS_OK = 'ok';
+    const RESULT_STATUS_ERR = 'err';
+
     const FORMAT_XML = 'xml';
     const FORMAT_STRING = 'string';
     const FORMAT_JSON = 'json';
@@ -271,9 +274,7 @@ class SeeMeGateway
         $this->setCallbackParams($params, $callbackParams);
         $this->setCallbackUrl($params, $callbackURL);
 
-        $result = $this->callAPI($params);
-
-        return $this->parseResult($result);
+        return $this->parseResult($this->callAPI($params));
     }
 
     /**
@@ -285,9 +286,7 @@ class SeeMeGateway
         $params = $this->params;
         $params['method'] = 'balance';
 
-        $result = $this->callAPI($params);
-
-        return $this->parseResult($result);
+        return $this->parseResult($this->callAPI($params));
     }
 
     /**
@@ -303,22 +302,17 @@ class SeeMeGateway
         $params['ip'] = trim($ip);
 
         if (!$this->validateIP($ip)) {
-            throw new SeeMeGatewayException(
-                "Parameter is invalid: ip",
-                "15"
-            );
+            throw new SeeMeGatewayException("Parameter is invalid: ip", "15");
         }
 
-        $result = $this->callAPI($params);
-
-        return $this->parseResult($result);
+        return $this->parseResult($this->callAPI($params));
     }
 
     /**
      * Returns the call's result
      *
      * @access public
-     * @return string
+     * @return array
      */
     public function getResult()
     {
@@ -341,15 +335,15 @@ class SeeMeGateway
                     throw new Exception("SeeMe Gateway: Wrong return format type. Must be a string");
                 }
 
-                parse_str($result, $resultparts);
+                parse_str($result, $resultParts);
                 break;
 
             case self::FORMAT_JSON:
-                $resultparts = json_decode($result, true);
+                $resultParts = json_decode($result, true);
                 break;
 
             case self::FORMAT_XML:
-                $resultparts = json_decode(json_encode((array)simplexml_load_string($result)), 1);
+                $resultParts = json_decode(json_encode((array)simplexml_load_string($result)), 1);
                 break;
 
             default:
@@ -357,33 +351,32 @@ class SeeMeGateway
                 break;
         }
 
-        $this->result = $resultparts;
-        $this->log += $resultparts;
+        $this->result = $resultParts;
+        $this->log += $result;
 
         $this->logToFile($this->log);
 
-        switch (@$resultparts['result']) {
-            case 'OK':
-                // SMS submitted successfully
-                return $resultparts;
-                break;
+        if (is_array($resultParts) && array_key_exists('result', $resultParts)) {
+            switch (strtolower($resultParts['result'])) {
+                case self::RESULT_STATUS_OK:
+                    // SMS submitted successfully
+                    return $resultParts;
+                    break;
 
-            case 'ERR':
-                // error during SMS submit
-                throw new SeeMeGatewayException(
-                    $resultparts['message'],
-                    $resultparts['code']
-                );
-                break;
+                case self::RESULT_STATUS_ERR:
+                    // error during SMS submit
+                    throw new SeeMeGatewayException(
+                        $resultParts['message'],
+                        $resultParts['code']
+                    );
+                    break;
 
-            default:
-                throw new Exception(
-                    'SeeMe Gateway: unimplemented result ' .
-                    '"' . @$resultparts['code'] . '", ' .
-                    '"' . @$resultparts['message'] . '", ' .
-                    'raw result: "' . $result . '"'
-                );
-                break;
+                default:
+                    throw new Exception('SeeMe Gateway: unimplemented result ' . 'raw result: "' . $result . '"');
+                    break;
+            }
+        } else {
+            throw new Exception('Bad result format! Raw result: '. $result);
         }
     }
 
