@@ -168,16 +168,18 @@ class SeeMeGateway
     /**
      * Set sender
      * @param array $params
-     * @param string $sender
+     * @param string|null $sender
      * @throws SeeMeGatewayException
      */
     protected function setSender(array &$params, $sender)
     {
-        if (!is_string($sender)) {
+        if (!is_string($sender) && !is_null($sender)) {
             throw new SeeMeGatewayException('Invalid sender parameter type. Must be string', 1);
         }
 
-        $params['sender'] = trim($sender);
+        if (is_string($sender)) {
+            $params['sender'] = trim($sender);
+        }
     }
 
     /**
@@ -192,7 +194,9 @@ class SeeMeGateway
             throw new SeeMeGatewayException('Invalid number reference type. Must be string, number or null', 1);
         }
 
-        $params['reference'] = trim($reference);
+        if (is_string($reference) && is_numeric($reference)) {
+            $params['reference'] = trim($reference);
+        }
     }
 
     /**
@@ -232,7 +236,7 @@ class SeeMeGateway
             throw new SeeMeGatewayException('Incorrect callback URL format. Must be string or null', 1);
         }
 
-        if (!is_null($callbackUrl)) {
+        if (is_string($callbackUrl)) {
             $params['callbackurl'] = $callbackUrl;
         }
     }
@@ -243,7 +247,7 @@ class SeeMeGateway
      * @access public
      * @param string $number Mobile phone number in international format (pl. 36201234567)
      * @param string $message Message encoded in UTF-8
-     * @param string $sender Sender ID
+     * @param string|null $sender Sender ID
      * @param string|null $reference
      * @param string|null $callbackParams
      * @param string|null $callbackURL
@@ -253,7 +257,7 @@ class SeeMeGateway
     public function sendSMS(
         $number,
         $message,
-        $sender = '',
+        $sender = null,
         $reference = null,
         $callbackParams = null,
         $callbackURL = null
@@ -332,7 +336,7 @@ class SeeMeGateway
     protected function parseResult($result)
     {
         switch ($this->format) {
-            case 'string':
+            case self::FORMAT_STRING:
                 if (!is_string($result)) {
                     throw new Exception("SeeMe Gateway: Wrong return format type. Must be a string");
                 }
@@ -340,11 +344,11 @@ class SeeMeGateway
                 parse_str($result, $resultparts);
                 break;
 
-            case 'json':
+            case self::FORMAT_JSON:
                 $resultparts = json_decode($result, true);
                 break;
 
-            case 'xml':
+            case self::FORMAT_XML:
                 $resultparts = json_decode(json_encode((array)simplexml_load_string($result)), 1);
                 break;
 
@@ -402,13 +406,13 @@ class SeeMeGateway
             . $this->method . ': ' . $apiUrl;
 
         switch (trim($this->method)) {
-            case 'file_get_contents':
+            case self::METHOD_FILE_GET_CONTENTS:
                 if (!ini_get('allow_url_fopen')) {
                     throw new Exception("SeeMe Gateway: can't use allow_url_fopen method.");
                 }
                 $result = file_get_contents($apiUrl);
                 break;
-            case 'curl':
+            case self::METHOD_CURL:
                 if (!extension_loaded('curl')) {
                     throw new Exception('SeeMe Gateway: CURL not installed on your server');
                 }
