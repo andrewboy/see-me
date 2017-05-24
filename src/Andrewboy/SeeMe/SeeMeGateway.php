@@ -58,7 +58,7 @@ class SeeMeGateway
     /**
      * SeeMeGateway constructor.
      * @param string $apiKey
-     * @param bool $logFileDestination
+     * @param string|bool $logFileDestination
      * @param string $format
      * @param string $method
      */
@@ -634,7 +634,6 @@ class SeeMeGateway
      *
      * @access protected
      * @param string $string
-     * @return null
      * @throws Exception
      */
     protected function logToFile($string)
