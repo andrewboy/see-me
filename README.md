@@ -2,6 +2,14 @@
 
 This package is a helper for send API calls to [SeeMe](https://seeme.hu/).
 
+## Install
+
+```
+
+composer require andrewboy/see-me
+
+```
+
 ## SeeMeGateway class
 
 ### Format types
