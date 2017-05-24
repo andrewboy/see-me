@@ -1,7 +1,6 @@
 {
   "name": "andrewboy/see-me",
   "description": "Helper class for SeeMe SMS sender.",
-  "version": "1.0.0",
   "keywords": ["see me", "sms", "sms sender", "sender", "seeme"],
   "authors": [
     {
