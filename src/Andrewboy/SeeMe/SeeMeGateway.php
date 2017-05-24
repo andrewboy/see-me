@@ -307,11 +307,20 @@ class SeeMeGateway
             $this->setCallbackUrl($params, $callbackURL);
         } catch (Exception $e) {
             $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
-            $this->logToFile($this->log);
+            $this->logToFile($this->getLog());
             throw $e;
         }
 
-        return $this->fetchResult($params);
+        try {
+            $result = $this->fetchResult($params);
+        } catch (\Exception $e) {
+            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
+            throw $e;
+        } finally{
+            $this->logToFile($this->getLog());
+        }
+
+        return $result;
     }
 
     /**
@@ -319,30 +328,13 @@ class SeeMeGateway
      *
      * @param array $params
      * @return array
-     * @throws Exception
      */
     protected function fetchResult(array $params)
     {
-        try {
-            $rawResult = $this->callAPI($params);
-            $this->addLog('raw_result: ' . serialize($rawResult));
-        } catch (Exception $e) {
-            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
-            $this->logToFile($this->log);
-            throw $e;
-        }
+        $rawResult = $this->callAPI($params);
+        $this->addLog('raw_result: ' . serialize($rawResult));
 
-        try {
-            $result = $this->parseResult($rawResult);
-        } catch (Exception $e) {
-            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
-            $this->logToFile($this->log);
-            throw $e;
-        }
-
-        $this->logToFile($this->log);
-
-        return $result;
+        return $this->parseResult($rawResult);
     }
 
     /**
@@ -384,7 +376,7 @@ class SeeMeGateway
             $this->setIpParam($params, $ip);
         } catch (Exception $e) {
             $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
-            $this->logToFile($this->log);
+            $this->logToFile($this->getLog());
             throw $e;
         }
 
