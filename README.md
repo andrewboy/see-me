@@ -2,24 +2,24 @@
 
 This package is a helper for send API calls to [SeeMe](https://seeme.hu/).
 
-##SeeMeGateway class
+## SeeMeGateway class
 
-###Format types
+### Format types
 
 * 'json'
 * 'string'
 * 'xml'
 
-###Method types
+### Method types
 
 * 'curl'
 * 'file_get_contents'
 
-###Methods
+### Methods
 
-####__consrtuct
+#### __consrtuct
 
-#####params
+##### params
 
 * *$apiKey:* application key
     * type: string
@@ -40,61 +40,61 @@ This package is a helper for send API calls to [SeeMe](https://seeme.hu/).
     * required: false
     * default: 'curl'
     
-#####return
+##### return
 
 * void
     
-####setApiKey
+#### setApiKey
 
-#####params
+##### params
 
 * *$apiKey:* application key
     * type: string
     * required: true
     
-#####return
+##### return
 
 * void
     
-####setFormat
+#### setFormat
 
-#####params
+##### params
     
 * *$format:* set result format
     * type: string
     * required: true
     
-#####return
+##### return
 
 * void
     
-####setMethod
+#### setMethod
 
-#####params
+##### params
 
 * *$method:* set method type
     * type: string
     * required: true
     
-#####return
+##### return
 
 * void
     
-####setLogFileDestination
+#### setLogFileDestination
 
-#####params
+##### params
 
 * *$logFileDestination*: set log destination. Must be string "destination" or boolean false if we not want to log
     * type: string|boolean
     * required: true
     
-#####return
+##### return
 
 * void
     
-####sendSMS
+#### sendSMS
 
-#####params
+##### params
 
 * *$number:* mobile number, format: /^36(20|30|31|70)\d{7}$/
     * type: string
@@ -124,36 +124,36 @@ This package is a helper for send API calls to [SeeMe](https://seeme.hu/).
     * required: false
     * default: null
     
-#####return
+##### return
 
 * array
     
-####getBalance
+#### getBalance
 
-#####return
+##### return
 
 * array
 
-####setIP
+#### setIP
 
-#####params
+##### params
 
 * *$ip:*
     * type: string
     * required: true
     
-#####return
+##### return
 
 * array
 
-####getResult
+#### getResult
 
-#####return
+##### return
 
 * array
 
-####getLog
+#### getLog
 
-#####return
+##### return
 
 * string
