@@ -340,6 +340,7 @@ class SeeMeGateway
     /**
      * Get balance
      * @return array
+     * @throws Exception
      */
     public function getBalance()
     {
@@ -352,7 +353,16 @@ class SeeMeGateway
 
         $this->addLog('params: ' . serialize($params));
 
-        return $this->fetchResult($params);
+        try {
+            $result = $this->fetchResult($params);
+        } catch (\Exception $e) {
+            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
+            throw $e;
+        } finally{
+            $this->logToFile($this->getLog());
+        }
+
+        return $result;
     }
 
     /**
@@ -382,7 +392,16 @@ class SeeMeGateway
 
         $this->addLog('params: ' . serialize($params));
 
-        return $this->fetchResult($params);
+        try {
+            $result = $this->fetchResult($params);
+        } catch (\Exception $e) {
+            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
+            throw $e;
+        } finally{
+            $this->logToFile($this->getLog());
+        }
+
+        return $result;
     }
 
     /**
