@@ -23,37 +23,37 @@ use \Exception as Exception;
 
 class SeeMeGateway
 {
+    /**
+     * Result statuses
+     */
     const RESULT_STATUS_OK = 'ok';
     const RESULT_STATUS_ERR = 'err';
 
+    /**
+     * Format types
+     */
     const FORMAT_XML = 'xml';
     const FORMAT_STRING = 'string';
     const FORMAT_JSON = 'json';
 
+    /**
+     * Method types
+     */
     const METHOD_CURL = 'curl';
     const METHOD_FILE_GET_CONTENTS = 'file_get_contents';
 
     /**
-     * Gateway calling method file_get_contents or curl
-     *
-     * @access protected
-     * @var string
+     * API data
      */
+    const API_URL = 'https://seeme.hu/gateway';
+    const API_VERSION = '2.0.1';
+
     protected $method;
-    protected $apiUrl = 'https://seeme.hu/gateway';
     protected $logFileDestination = false;
     protected $format;
     protected $log = '';
-
-    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    #xx DO NOT EDIT CODE UNDER THIS LINE
-    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
     protected $params = [];
     protected $result;
-//    protected $reference;
-    protected $version = '2.0.1';
-    protected $checksumLength = 4;
 
     /**
      * SeeMeGateway constructor.
@@ -245,6 +245,25 @@ class SeeMeGateway
     }
 
     /**
+     * Set IP parameter
+     * @param array $params
+     * @param string $ip
+     * @throws SeeMeGatewayException
+     */
+    protected function setIpParam(array $params, $ip)
+    {
+        if (!is_string($ip)) {
+            throw new SeeMeGatewayException('Incorrect ip parameter format. Must be string', 1);
+        }
+
+        if (!$this->validateIP($ip)) {
+            throw new SeeMeGatewayException("Parameter is invalid: ip", 15);
+        }
+
+        $params['ip'] = trim($ip);
+    }
+
+    /**
      * Send SMS. Throws an exception on error
      *
      * @access public
@@ -255,7 +274,7 @@ class SeeMeGateway
      * @param string|null $callbackParams
      * @param string|null $callbackURL
      * @return array
-     * @throws SeeMeGatewayException
+     * @throws Exception
      */
     public function sendSMS(
         $number,
@@ -267,14 +286,63 @@ class SeeMeGateway
     ) {
         $params = $this->params;
 
-        $this->setTelNumber($params, $number);
-        $this->setMessage($params, $message);
-        $this->setSender($params, $sender);
-        $this->setReference($params, $reference);
-        $this->setCallbackParams($params, $callbackParams);
-        $this->setCallbackUrl($params, $callbackURL);
+        $this->setLog('');
+        $this->addLog('--------------------------------------------------------------------');
+        $this->addLog('SEE ME - SEND SMS');
+        $this->addLog('INPUT PARAMS');
+        $this->addLog('number: ' . serialize($number));
+        $this->addLog('message: ' . serialize($message));
+        $this->addLog('sender: ' . serialize($sender));
+        $this->addLog('reference: ' . serialize($reference));
+        $this->addLog('callback_params: ' . serialize($callbackParams));
+        $this->addLog('callback_url: ' . serialize($callbackURL));
+        $this->addLog('default_params: ' . serialize($params));
 
-        return $this->parseResult($this->callAPI($params));
+        try {
+            $this->setTelNumber($params, $number);
+            $this->setMessage($params, $message);
+            $this->setSender($params, $sender);
+            $this->setReference($params, $reference);
+            $this->setCallbackParams($params, $callbackParams);
+            $this->setCallbackUrl($params, $callbackURL);
+        } catch (Exception $e) {
+            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
+            $this->logToFile($this->log);
+            throw $e;
+        }
+
+        return $this->fetchResult($params);
+    }
+
+    /**
+     * Fetch the result through API call
+     *
+     * @param array $params
+     * @return array
+     * @throws Exception
+     */
+    protected function fetchResult(array $params)
+    {
+        try {
+            $rawResult = $this->callAPI($params);
+            $this->addLog('raw_result: ' . serialize($rawResult));
+        } catch (Exception $e) {
+            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
+            $this->logToFile($this->log);
+            throw $e;
+        }
+
+        try {
+            $result = $this->parseResult($rawResult);
+        } catch (Exception $e) {
+            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
+            $this->logToFile($this->log);
+            throw $e;
+        }
+
+        $this->logToFile($this->log);
+
+        return $result;
     }
 
     /**
@@ -283,29 +351,46 @@ class SeeMeGateway
      */
     public function getBalance()
     {
+        $this->setLog('');
+        $this->addLog('--------------------------------------------------------------------');
+        $this->addLog('SEE ME - GET BALANCE');
+
         $params = $this->params;
         $params['method'] = 'balance';
 
-        return $this->parseResult($this->callAPI($params));
+        $this->addLog('params: ' . serialize($params));
+
+        return $this->fetchResult($params);
     }
 
     /**
      * Set IP
      * @param string $ip
      * @return array
-     * @throws SeeMeGatewayException
+     * @throws Exception
      */
     public function setIP($ip)
     {
+        $this->setLog('');
+        $this->addLog('--------------------------------------------------------------------');
+        $this->addLog('SEE ME - SET IP');
+        $this->addLog('INPUT PARAMS');
+        $this->addLog('number: ' . serialize($ip));
+
         $params = $this->params;
         $params['method'] = 'setip';
-        $params['ip'] = trim($ip);
 
-        if (!$this->validateIP($ip)) {
-            throw new SeeMeGatewayException("Parameter is invalid: ip", "15");
+        try {
+            $this->setIpParam($params, $ip);
+        } catch (Exception $e) {
+            $this->addLog('Exception thrown ('. get_class($e) .'): ' . $e->getMessage());
+            $this->logToFile($this->log);
+            throw $e;
         }
 
-        return $this->parseResult($this->callAPI($params));
+        $this->addLog('params: ' . serialize($params));
+
+        return $this->fetchResult($params);
     }
 
     /**
@@ -352,9 +437,7 @@ class SeeMeGateway
         }
 
         $this->result = $resultParts;
-        $this->log += $result;
-
-        $this->logToFile($this->log);
+        $this->addLog('parsed_result: ' . serialize($this->result));
 
         if (is_array($resultParts) && array_key_exists('result', $resultParts)) {
             switch (strtolower($resultParts['result'])) {
@@ -392,11 +475,10 @@ class SeeMeGateway
             $params['format'] = $this->format;
         }
 
-        $params['apiVersion'] = $this->version; // SeeMe GW api version
-        $apiUrl = $this->apiUrl . '?' . http_build_query($params, '', '&');
+        $params['apiVersion'] = self::API_VERSION; // SeeMe GW api version
+        $apiUrl = self::API_URL . '?' . http_build_query($params, '', '&');
 
-        $this->log = PHP_EOL . '----------------------------' . PHP_EOL
-            . $this->method . ': ' . $apiUrl;
+        $this->addLog('api_url: ' . $apiUrl);
 
         switch (trim($this->method)) {
             case self::METHOD_FILE_GET_CONTENTS:
@@ -405,12 +487,14 @@ class SeeMeGateway
                 }
                 $result = file_get_contents($apiUrl);
                 break;
+
             case self::METHOD_CURL:
                 if (!extension_loaded('curl')) {
                     throw new Exception('SeeMe Gateway: CURL not installed on your server');
                 }
                 $result = $this->callCURL($apiUrl);
                 break;
+
             default:
                 throw new Exception('SeeMe Gateway: unimplemented callingMethod: "' . $this->method . '"');
         }
@@ -487,18 +571,51 @@ class SeeMeGateway
      */
     protected function validateApiKey($hash)
     {
-        $key = substr($hash, 0, -$this->checksumLength);
-        $checksum = substr($hash, -$this->checksumLength);
+        $checksumLength = 4;
+        $key = substr($hash, 0, -$checksumLength);
+        $checksum = substr($hash, -$checksumLength);
 
-        return substr(md5($key), 0, $this->checksumLength) == $checksum;
+        return substr(md5($key), 0, $checksumLength) == $checksum;
     }
 
     /**
+     * Get log message
+     *
      * @return string
      */
     public function getLog()
     {
         return $this->log;
+    }
+
+    /**
+     * Append message to log
+     *
+     * @param string $message
+     * @throws Exception
+     */
+    protected function addLog($message)
+    {
+        if (!is_string($message)) {
+            throw new Exception('addLog message type must be string');
+        }
+
+        $this->log .= PHP_EOL . $message . PHP_EOL;
+    }
+
+    /**
+     * Set log message
+     *
+     * @param string $message
+     * @throws Exception
+     */
+    protected function setLog($message)
+    {
+        if (!is_string($message)) {
+            throw new Exception('setLog message type must be string');
+        }
+
+        $this->log = $message;
     }
 
     /**
